@@ -1,0 +1,96 @@
+Un bean este un obiect gestionat de containerul Spring
+Asta inseamna ca Spring creeaza instanta clasei, o configureaza, o pastreaza in memorie si ti-o da
+ori de cate ori ai nevoie de ea (prinm dependency injection)
+
+
+Tomcat este un server web si un container de servlet-uri scrin in Java
+Este cel care primeste request-urile HTTP, le proceseaza si trimite raspunsurile inapoi catre client(browser, app mobil, etc)
+Este incorporat in SprintBoot
+Tomcat asculta pe un port(implicit 8080)
+Cand primeste un request(GET/salut), Tomcat il trimite la controller-ul potrivit din aplicatie
+Controller-ul produce un raspuns, Tomcat il trimite clientului
+
+in resources/application.yml se poate schimba:
+portul cu comanda de mai jos:
+server:
+  port: 3000
+
+co comanda de mai jos in acelasi fisier se poate opri serverul:
+server:
+  port: 3000
+
+ spring:
+  main:
+    web-application-type: none
+ //default el vine cu :servlet
+
+
+
+Un servlet este o clasă Java care rulează pe un server de aplicații (precum Tomcat) și care primește request-uri HTTP și trimite răspunsuri HTTP.
+Pe scurt, un servlet este o bucată de cod care știe să răspundă la cereri de pe web.
+Dar daca folosim springBoot stie el sa faca toate astea cu getMapping si RestController+
+
+HTTP este limbajul standard de comunicare intre browser si server
+Spune cum se cer si se trimit pagini web, imagini, fisiere sau date API
+
+GET → citește
+POST → creează
+PUT → actualizează complet
+DELETE → șterge
+-----------------
+// Maparea unui request HTTP GET catre metoda greet()
+    // "/" inseamna radacina aplicatiei (ex: http://localhost:8080/) adica root cand executi direct, daca pui spre ex /greet atunci trebuie executat exact asa
+    // Cand se acceseaza acest endpoint, se executa metoda si se trimite mesajul "Hello"
+    @GetMapping("/greet")
+    public GreetResponse greet(@RequestParam(value = "name", required = false) String name) {
+        String greetMessage = name == null || name.isBlank() ? "Hello" : "Hello " + name;
+        GreetResponse response = new GreetResponse(
+                greetMessage,
+                List.of("Java", "Golang", "JavaScript"),
+                new Person("Alex", 36, 20_000)
+        );
+        return response;
+    }
+
+    record Person(String name, int age, double savings) {
+    }
+
+    // record - tip special de clasa pentru obiecte simple si imutabile
+    // Genereaza automat constructor, gettere, equals, hascode si toString
+    // Aici il folosim pentru a modela raspunsul API (JSON)
+    record GreetResponse(
+            String greet,
+            List<String> favProgrammingLanguages,
+            Person person
+    ) {
+    }
+    ------------------------
+    Clasa customer este un model/entity - reprezinta datele unui client - iar daca folosim JPA va fi o entitate mapata la tabel
+    CustomerController - este un API/WebLayer - expune endpoint-uri HTTP(REST) - Primeste requestul, valideaze inputul si trimite mai departe la Service
+    CustomerService - Business layer - contine logica de business(reguli, validari, tranzactii), nu stie de HTTP, doar de operatiile de domeniu si apeleaza DAO/Repository
+    CustomerDao - Port/Repository-interfata - defineste operatiile de acces la datele pe care le vrei(contractul)
+    CustomerDataAccessService - DAO implementation/Adapter - Implementarea concreta a lui DAO
+    CustomerRepository este stratul de acces la date pentru entitatea Customer - Îți oferă toate operațiile CRUD și query-uri simple direct, fără cod suplimentar.
+
+    Cum se leaga intre ele, fluxul unei cereri:
+    Http request -> Controller -> Service -> DAO/Repository -> DB
+    Iar rezultatul se intoarce invers pana in Controller care il serializeaza in JSON
+    -------------
+    docker compose up -d                start database
+    docker compose ps                   status
+    docker exec -it postgres bash       te duci in folder ala
+    psql -U loocos                      intri in baza de date loocos
+    \l                                  iti arata ce ai acolo
+    \q                                  exit din baza de date
+    ctrl + d                            iesi de tot
+    --------------
+    @Entity - Spune lui JPA/Hibernate ca aceasta clasa este o entitate si trebuie mapata la un tabel din baza de date (numele clasei este numele tabelului cu lowercase)
+    @Id - marcheaza campul Id ca fiind primaryKey a tabelului/entitati
+    @SequenceGenerator - Definește un generator de secvență care va fi folosit pentru a genera valorile câmpului id.
+                         name – numele generatorului (poți să-l folosești mai jos în @GeneratedValue).
+                         sequenceName – numele secvenței din baza de date care va produce valorile numerice (PostgreSQL trebuie să aibă o secvență customer_id_sequence sau Hibernate o va crea dacă ddl-auto=create).
+                         Practic: de fiecare dată când inserezi un nou Customer, Hibernate cere următoarea valoare din secvență și o folosește ca id.
+    @GeneratedValue - Spune cum să fie generată valoarea pentru câmpul id.
+                      strategy = GenerationType.SEQUENCE → folosește o secvență din baza de date.
+                      generator = "customer_id_sequence" → folosește generatorul de mai sus (@SequenceGenerator).
+                      Practic, nu mai trebuie să setezi manual id, Hibernate o va popula automat la INSERT.
