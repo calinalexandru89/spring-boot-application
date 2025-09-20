@@ -26,7 +26,7 @@ public class Main {
             Customer alex = new Customer( "Alex", "alex@gmail.com", 36);
             Customer jamila = new Customer("Jamila", "jamila@gmail.com", 26);
             List<Customer> customers = List.of(alex, jamila);
-            customerRepository.saveAll(customers);
+           //customerRepository.saveAll(customers);
         };
     }
 }

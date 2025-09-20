@@ -1,3 +1,21 @@
+✅ Spring Boot 3
+✅ HTTP & API development
+✅ Developer tools for maximum productivity
+✅ Robust error handling techniques
+✅ Databases & PostgreSQL
+✅ Spring Data JPA
+✅ Flyway for seamless database migrations
+✅ JDBC for efficient database communication
+✅ Testing strategies for robust, reliable code
+✅ Docker for containerization and deployment
+✅ AWS for cloud-based hosting and scaling
+✅ DevOps best practices for agile, collaborative development
+✅ javascript and React for front-end development
+✅ Spring Security 6 for secure, authenticated applications
+✅ Login/Registration systems for user management
+✅ TypeScript for type-safe, scalable code
+✅ Angular for powerful, responsive front-end interfaces
+-----------------
 Un bean este un obiect gestionat de containerul Spring
 Asta inseamna ca Spring creeaza instanta clasei, o configureaza, o pastreaza in memorie si ti-o da
 ori de cate ori ai nevoie de ea (prinm dependency injection)
@@ -76,11 +94,17 @@ DELETE → șterge
     Http request -> Controller -> Service -> DAO/Repository -> DB
     Iar rezultatul se intoarce invers pana in Controller care il serializeaza in JSON
     -------------
+    mvn clean package                   -un fel de rebuild la tot mvn
     docker compose up -d                start database
     docker compose ps                   status
     docker exec -it postgres bash       te duci in folder ala
     psql -U loocos                      intri in baza de date loocos
     \l                                  iti arata ce ai acolo
+    \x                                  expanded dispay
+    \c customer                         te conectezi la baza de date
+    \d                                  arata relatiile
+    \dt                                 list of relations
+    \dn                                 lista de schema
     \q                                  exit din baza de date
     ctrl + d                            iesi de tot
     --------------
@@ -94,3 +118,74 @@ DELETE → șterge
                       strategy = GenerationType.SEQUENCE → folosește o secvență din baza de date.
                       generator = "customer_id_sequence" → folosește generatorul de mai sus (@SequenceGenerator).
                       Practic, nu mai trebuie să setezi manual id, Hibernate o va popula automat la INSERT.
+   --------------
+   JDBC - Java Database Connectivity - este API-ul standard din java care iti permite sa te conectezi si sa lucrezi cu baze de date rationale
+   In Spring JDBC este stratul de baza folosit pentru comunicarea cu baza de date
+   cand eu folosesc customerRepository.save(customer) in spate se intampla asta:
+   Spring data JPA - transforma obiectul Customer intr-un querry SQL
+   Hibernate - ORM-ul default pentru JAVA - genereaza acel sql efectiv
+   Hibernate foloseste JDBC sa trimita acel SQL la baza de date
+   Driverul JDBC executa querry pe baza de date si returneaza rezultatele
+   ----------------
+   Hibernate - este un ORM(Object relational mapping) framework pentru Java
+   Transforma obiectele Java (Customer) in randuri din tabelul SQL
+   si invers transforma randurile din baza de date in obiecte JAVA
+
+   --------------------
+   | Concept         | Ce este (Definiție scurtă)                                | Ce face (Rolul lui în aplicație)                                                                         | Exemplu simplu                                                              |
+   | --------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+   | **Spring**      | Framework Java pentru aplicații enterprise, modular.      | Îți oferă infrastructura: Dependency Injection (IOC), AOP, configurare ușoară.                           | Creezi un `@Service`, Spring se ocupă să îți dea instanța unde ai nevoie.   |
+   | **Spring Boot** | Extensie a Spring → face configurarea automată și rapidă. | Elimină fișiere XML, aduce autoconfigurare, server Tomcat integrat, starter dependencies.                | Rulezi aplicația cu un singur `main()`, fără să configurezi server separat. |
+   | **Hibernate**   | Framework **ORM** (Object-Relational Mapping).            | Leagă obiectele Java (`Customer`) de tabele SQL. Generează și execută SQL pentru tine.                   | `customerRepository.save(customer)` → Hibernate face `INSERT` în DB.        |
+   | **JDBC**        | API standard Java pentru conectarea la baze de date.      | Trimite SQL-ul efectiv la DB și primește rezultatele. Hibernate și Spring Boot îl folosesc „sub capotă”. | `DriverManager.getConnection(...)`, `PreparedStatement.executeQuery(...)`.  |
+   | **Bean**        | Obiect creat și gestionat de containerul Spring.          | Spring îl creează, îl configurează și îl injectează unde ai nevoie (prin `@Autowired`).                  | `@Bean` într-o clasă de config sau `@Service` devine bean automat.          |
+   | **API**         | Interfață de comunicare între aplicații.                  | În contextul tău → expui endpoint-uri REST pentru ca altcineva să poată trimite request-uri HTTP.        | `@GetMapping("/customers")` → returnează JSON cu lista de clienți.          |
+
+Cum lucrează împreună într-o aplicație
+
+Imaginează-ți un flux de POST /customers:
+
+API (Controller): primește JSON din Postman → îl transformă în obiect CustomerRegistrationRequest.
+
+Spring (Beans & DI): injectează CustomerService în CustomerController.
+
+Spring Boot: pornește aplicația cu Tomcat integrat, creează contextul Spring, încarcă toate componentele.
+
+Service + Repository: CustomerService cheamă customerRepository.save(...).
+
+Hibernate (ORM): generează SQL de tip INSERT pentru obiectul primit.
+
+JDBC: trimite SQL-ul la PostgreSQL.
+
+Baza de date: salvează datele, întoarce răspunsul → Hibernate îl transformă înapoi în obiect, iar controllerul îl returnează ca JSON.
+
+🔑 Pe scurt:
+
+Spring = „scheletul” aplicației tale, cu DI și alte features.
+
+Spring Boot = „boosterul” care face pornirea și configurarea super rapidă.
+
+Hibernate = face legătura între obiectele tale și SQL.
+
+JDBC = execută SQL-ul real în DB.
+
+Bean = obiect pe care Spring îl creează și îl injectează pentru tine.
+
+API = modul prin care lumea interacționează cu aplicația ta (REST endpoints).
+-----------
+Flyway (sau liquidway) - este un tool de database migration - tine evidenta versiuni de database si aplica automat scripturi pentru a fi la zi
+DataSource - este obiectul care stie cum sa creeze si sa ofere conexiuni catre baza de date
+In loc sa faci manual connexiuni cu DriverManager.getConnexion(...) el ofera o metoda mai rapida si mai eleganta + connection pooling
+-------------
+Concept	Se ocupă de…	Ce "pulează"	Folosit de
+HikariCP	Conexiuni la DB	Conexiuni	Spring Data JPA, JdbcTemplate
+Tomcat TP	Fire pentru HTTP	Thread-uri	Serverul Tomcat (web requests)
+---------------
+HikariCP - un connection pool pentru conexiuni la baza de date, gestioneaza conexiunile catre baza de date intr-un mod rapid si eficient
+La pornirea aplicatiei, HikariCP deschide un nr de conexiuni la DB, cand aplicatia are nevoie sa ruleze un querry, hicariCP ii da o conexiune din pool.
+Cand se termina, conexiunea nu se inchide ci se intoarce in pool, gata pentru urmatorul request
+
+Tomcat Thread Pool - un thread pool(pool de fire de executie) folosit de Tomcat, care e serverul web incorporat in Sprin Boot.
+Gestioneaza fierele de executie care raspund la cererile Http(GET/POST/PUT/DELETE)
+Cand vine un req de la un client(browser, etc), tomcat ia un thread din pool ca sa proceseze cererea, dupa ce req a fost rezolvat, thread-ul este eliberat si se poate folosi pentru un alt reques
+----------
