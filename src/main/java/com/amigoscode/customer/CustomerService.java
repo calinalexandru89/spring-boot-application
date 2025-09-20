@@ -1,6 +1,7 @@
 package com.amigoscode.customer;
 
-import com.amigoscode.exception.ResourceNotFound;
+import com.amigoscode.exception.DuplicateResourceException;
+import com.amigoscode.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,26 @@ public class CustomerService {
     }
 
     public Customer getCustomers(Integer id) {
-        return customerDao.selectCustomerById(id).orElseThrow(() -> new ResourceNotFound("Customer with id [%s] not found".formatted(id)));
+        return customerDao.selectCustomerById(id).orElseThrow(() -> new ResourceNotFoundException("Customer with id [%s] not found".formatted(id)));
+    }
+
+    public void addCustomer(CustomerRegistrationRequest customerRegistrationRequest) {
+        //check if email exist
+        String email = customerRegistrationRequest.email();
+
+        if(customerDao.existsCustomerWithEmail(email)){
+            throw new DuplicateResourceException("Email already taken");
+        }
+        //if not add
+        Customer customer = new Customer(customerRegistrationRequest.name(), customerRegistrationRequest.email(), customerRegistrationRequest.age());
+
+        customerDao.insertCustomer(customer);
+    }
+
+    public void deleteCustomerById(Integer customerId) {
+        if(!customerDao.existsPersonWithId(customerId)){
+            throw new ResourceNotFoundException("Customer with id [%s] not found".formatted(customerId));
+        }
+        customerDao.deleteCustomerById(customerId);
     }
 }
