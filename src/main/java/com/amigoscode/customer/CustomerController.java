@@ -1,6 +1,5 @@
 package com.amigoscode.customer;
 
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class CustomerController {
 
     @GetMapping("{customerid}")
     public Customer getCustomerById(@PathVariable("customerid") Integer customerid) {
-        return customerService.getCustomers(customerid);
+        return customerService.getCustomer(customerid);
     }
 
     @PostMapping
@@ -37,5 +36,10 @@ public class CustomerController {
     @DeleteMapping("{customerid}")
     public void deleteCustomer(@PathVariable("customerid") Integer customerid){
         customerService.deleteCustomerById(customerid);
+    }
+
+    @PutMapping("{customerid}")
+    public void updateCustomer(@PathVariable("customerid") Integer customerId, @RequestBody CustomerUpdateRequest updateRequest){
+        customerService.updateCustomer(customerId, updateRequest);
     }
 }

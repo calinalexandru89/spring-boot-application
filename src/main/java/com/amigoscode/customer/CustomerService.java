@@ -1,6 +1,7 @@
 package com.amigoscode.customer;
 
 import com.amigoscode.exception.DuplicateResourceException;
+import com.amigoscode.exception.RequestValidationException;
 import com.amigoscode.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ public class CustomerService {
         return customerDao.selectAllCustomers();
     }
 
-    public Customer getCustomers(Integer id) {
+    public Customer getCustomer(Integer id) {
         return customerDao.selectCustomerById(id).orElseThrow(() -> new ResourceNotFoundException("Customer with id [%s] not found".formatted(id)));
     }
 
@@ -41,5 +42,34 @@ public class CustomerService {
             throw new ResourceNotFoundException("Customer with id [%s] not found".formatted(customerId));
         }
         customerDao.deleteCustomerById(customerId);
+    }
+
+    public void updateCustomer(Integer customerId, CustomerUpdateRequest updateRequest) {
+        Customer customer = getCustomer(customerId);
+
+        boolean changes = false;
+
+        if(updateRequest.name() != null && !updateRequest.name().equals(customer.getName())){
+            customer.setName(updateRequest.name());
+            changes = true;
+        }
+
+        if(updateRequest.age() != null && !updateRequest.age().equals(customer.getAge())){
+            customer.setAge(updateRequest.age());
+            changes = true;
+        }
+
+        if(updateRequest.email() != null && !updateRequest.email().equals(customer.getEmail())){
+            if(customerDao.existsCustomerWithEmail(updateRequest.email())){
+                throw new DuplicateResourceException("Email already taken");
+            }
+            customer.setEmail(updateRequest.email());
+            changes = true;
+        }
+
+        if(!changes){
+            throw new RequestValidationException("No data change found");
+        }
+        customerDao.updateCustomer(customer);
     }
 }
